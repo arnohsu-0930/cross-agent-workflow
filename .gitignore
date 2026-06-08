@@ -54,3 +54,7 @@ images/generated/
 wordcloud-app/
 scratch/
 tmp/
+
+# Anti-Gravity private configurations
+ANTIGRAVITY.md
+
