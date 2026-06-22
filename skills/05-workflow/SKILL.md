@@ -3,46 +3,48 @@ name: antigravity-workflow
 description: 開工/收工/新專案初始化。說「開工」「開始工作」「我來了」「動工」「上工」「開工啦」「繼續」「回來」「收工」「下班」「結束」「休息」「今天就到這」「先這樣」「關機」「打包」「初始化專案」「新專案」「開新專案」「建立專案」「起新案」時載入。
 ---
 
-# 開工 / 收工 / 新專案初始化
+# 開工 / 收工 / 新專案初始化（跨 Agent 版）
+
+> 完整定義見 repo 根目錄 `MASTER-WORKFLOW.md`。本 skill 為各 Agent 的可載入版本。
+> 核心原則：我（Arno）跨 Agent（Claude Code / Codex / OpenCode / AntiGravity）、跨電腦工作。
+> 專案進度用根目錄 **STATUS.md** 接力，里程碑寫進 **Obsidian 第二大腦**。
+
+## 跨 Agent 共用狀態檔 STATUS.md
+
+每個專案根目錄放 `STATUS.md`，所有 Agent 共用。格式：完成事項 / 下一步 / 踩坑紀錄 / 環境狀態 / 最後更新（時間 + 更新者）。
+「更新者」填當前 Agent 名稱，讓下一個 Agent 知道是誰接力的。
 
 ## 開工
-0. **詢問同步來源**：「要檢查哪個來源？(G) GitHub / (D) Google Drive / (B) 兩者」→ 依選擇執行對應的同步檢查
-1. **讀取專案基本資訊**：讀取專案根目錄的 `ANTIGRAVITY.md`。
-2. **讀取專案筆記**：必須呼叫檔案檢視/讀取工具（或使用 Obsidian MCP），讀取 `ANTIGRAVITY.md` 中所指定的 `專案駕駛艙` 筆記的實際內容。
-3. **分析與展示狀態**：在回應中，必須向使用者展示從筆記中讀取到的「目前專案狀態」、「今日完成事項/待辦清單」以及「下一步計畫/踩坑紀錄」，絕對不能只列出筆記檔名而不讀取或不摘要內容。
-4. **檢查 Git 狀態**：在專案工作區執行 `git status` 與最近一次 commit 檢查（`git log -1`）。
-5. **詢問是否要 git pull**：「要拉遠端最新更新嗎？」→ 使用者說好才執行 `git pull`
-6. **回報與建議**：彙整上述資訊，回報當前狀態與建議下一步，且不自動進行 commit/push。
+0. **詢問第二大腦同步來源**：「(G) GitHub `git pull` `my-second-brain` / (D) Google Drive 確認 / (S) 跳過」→ 依選擇執行。
+1. **讀取專案基本資訊**：讀取專案根目錄的 `CLAUDE.md` / `AGENTS.md` / `ANTIGRAVITY.md`（存在哪個讀哪個）。
+2. **讀取 STATUS.md**：讀取專案根目錄 `STATUS.md` 了解上個 Agent 做到哪；沒有就視為新專案。
+3. **讀取專案筆記**：用 Obsidian MCP 或檔案工具讀取專案駕駛艙筆記的**實際內容**，不可只列檔名。
+4. **分析與展示狀態**：回應中展示「目前狀態」「完成/待辦」「下一步/踩坑」。
+5. **檢查 Git**：`git status` 與 `git log --oneline -5`。
+6. **詢問是否 git pull**：使用者說好才執行。
+7. **回報與建議**：彙整回報，不自動 commit/push。
 
 ## 收工
-1. **安全檢查**：檢查代碼與筆記，確保沒有上傳敏感資料（API key、token、密碼、Firebase 憑證、學生真名）。
-2. **更新筆記**：更新 Obsidian 專案駕駛艙（寫入完成事項、下一步、踩坑記錄）。
-3. **專案規則**：只有在規則或路徑改變時才更新 `ANTIGRAVITY.md`。
-4. **詢問同步管道**：主動詢問使用者：「請問您今天的筆記要同步到：(1) GitHub (2) Google Drive (3) 兩者皆同步？」
-   - **選 GitHub**：
-     - **筆記同步**：切換至 **Obsidian Vault 目錄**（讀取自 `ANTIGRAVITY.md` 中 `Obsidian vault` 欄位或筆記路徑之父目錄），在該目錄下針對該專案駕駛艙筆記（如 `<專案名稱>.md`）執行 `git add`、`git commit` 並 `git push` 推送至全域筆記本的 GitHub 遠端庫。
-     - **專案代碼同步**：若專案工作區有設定 Git 遠端庫，在工作區執行 `git commit` 並 `git push`；若專案無設定遠端庫，僅在本地進行 commit，不應因無遠端庫而報錯阻礙筆記的推送。
-   - **選 Google Drive**：若有設定 Google Drive 備份路徑，將筆記複製到對應的 Google Drive 同步資料夾中。
-   - **選 兩者皆同步**：同時執行上述兩項操作。
-5. **Git 提交**：檢查 `git status` 和 `git diff`，只 stage 與本次工作相關的檔案，不使用 `git add .` 無差別提交。
-6. **chezmoi 同步**：若 `~/.config/opencode/` 或共用 dotfiles 有變動，執行 `chezmoi add` + `chezmoi apply`
-7. **同步回報**：完成後回報同步結果（GitHub + Obsidian + chezmoi）。
+1. **安全檢查**：確保沒有上傳 API key、token、密碼、Firebase 憑證、個資。
+2. **詢問**：今天完成什麼、下一步、踩坑。
+3. **更新 STATUS.md**：寫入專案根目錄，含「更新者 = 當前 Agent」。
+4. **更新 Obsidian 駕駛艙**：里程碑與踩坑知識寫進 `SecondBrain\<專案名稱>.md`。
+5. **詢問專案代碼同步**：「(1) GitHub (2) 僅本地 commit (3) 跳過」；GitHub 時 `git diff` 確認後只 stage 相關檔案，不用 `git add .`。
+6. **詢問第二大腦同步**：「第二大腦同步到：
+   - (1) GitHub → 切到 vault 目錄 commit + push 到 `my-second-brain`
+   - (2) Google Drive → 複製到 `C:\Users\HsiuH許家修\Google Drive\SecondBrain`（不存在自動建立）
+   - (3) 兩者皆同步
+   - (4) 跳過」
+   > 公司電腦封鎖 Google Drive 請選 (1)；家裡電腦可選 (2) 或 (3)。
+7. **chezmoi 同步**（若有用 dotfiles）：`~/.config/opencode/` 等有變動時 `chezmoi add` + `chezmoi apply`。
+8. **同步回報**：回報 STATUS.md / Obsidian / 專案代碼 / 第二大腦的同步結果。
 
 ## 新專案初始化
-1. **資訊詢問**：必須呼叫 `ask_question` 工具向使用者詢問以下資料，以顯示為 UI 互動式卡片選單：
-   - 專案名稱
-   - 專案用途與功能簡介
-   - 工作資料夾路徑（確認是否為目前的目錄，還是要新建子資料夾）
-   - 是否需要建立 GitHub 儲存庫（私有/公開/不需要）
-   - 是否有 Google Drive 備份需求
-2. **自動尋找 Obsidian Vault 路徑**：
-   - AI 在建立專案駕駛艙前，**必須優先讀取全域設定檔** `C:\Users\<使用者>\.gemini\antigravity\mcp_config.json`。
-   - 解析 `mcp.obsidian.command` 中的參數，自動提取您的 Obsidian Vault 實際路徑（如 `C:\Users\HsiuH許家修\Documents\SecondBrain`）。
-   - 若成功讀取到路徑，直接在該路徑下建立專案駕駛艙筆記，**無須再詢問使用者路徑**；只有在找不到設定檔或路徑無效時，才向使用者發問。
-3. **自動建立**：建立以下項目（若已存在，則盤點並補齊缺口，不覆蓋既有設定）：
-   - `ANTIGRAVITY.md`（寫入專案入口資訊、Obsidian 筆記路徑、Git 雲端庫路徑、Google Drive 備份路徑）
-   - `README.md`（寫入專案名稱與簡介）
-   - `.gitignore`（預設排除敏感檔案與編譯產物）
-   - 初始化本地 Git 儲存庫
-   - 線上建立 GitHub Repository（若使用者需要）
-   - 在指定的 Obsidian Vault 下建立「專案駕駛艙.md」
+1. **資訊詢問**（用互動式卡片）：專案名稱、用途、工作資料夾路徑、是否建 GitHub repo（私有/公開/不要）、是否 Google Drive 備份。
+2. **自動尋找 Obsidian Vault 路徑**：優先讀 `C:\Users\HsiuH許家修\.gemini\antigravity\mcp_config.json` 的 `mcp.obsidian.command`，解析出 vault 路徑（`C:\Users\HsiuH許家修\Documents\SecondBrain`）；讀到就不再問路徑。
+3. **自動建立**（已存在則補齊、不覆蓋）：
+   - `STATUS.md`（跨 Agent 狀態檔）
+   - 專案說明檔：Claude→`CLAUDE.md`、Codex/OpenCode→`AGENTS.md`、AntiGravity→`ANTIGRAVITY.md`（寫入 Obsidian 筆記路徑、Git 遠端、Google Drive 備份路徑）
+   - `README.md`、`.gitignore`（排除敏感檔與編譯產物）
+   - 初始化本地 Git；需要時 `gh repo create`
+   - 在 Obsidian Vault 下建立「<專案名稱>.md」駕駛艙筆記

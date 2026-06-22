@@ -2,6 +2,24 @@
 
 這個 repo 只放 Anti-Gravity 使用者可公開套用的懶人包文件，不放個人 NotebookLM 清單、研究產物、生成圖片、測試專案或任何帳號資料。
 
+## ⭐ 跨 Agent・跨電腦 全域工作流程（重點）
+
+想讓 **Claude Code / Codex / OpenCode / AntiGravity** 都自動遵守同一套開工 / 收工 / 初始化流程，
+而且**換電腦也不用重設**——把這行貼給任一 Agent：
+
+```
+這是我的跨 Agent 工作流程懶人包 https://github.com/arnohsu-0930/antigravity-lazy-pack
+請依 INSTALL-GLOBAL.md 把工作流程裝進你的全域設定，之後我開任何專案你都要自動遵守。
+```
+
+Agent 會讀 `MASTER-WORKFLOW.md`（唯一真相來源）與 `INSTALL-GLOBAL.md`（自我安裝指令），
+把流程寫進它自己的全域設定檔（Claude→`~/.claude/CLAUDE.md`、Codex/OpenCode→`~/...AGENTS.md`、AntiGravity→global skill）。
+裝一次，之後**每個專案、每台電腦都自動生效**。
+
+- 專案進度用根目錄 `STATUS.md` 跨 Agent 接力；里程碑寫進 Obsidian 第二大腦。
+- 第二大腦同步：公司電腦走 GitHub（`my-second-brain` repo），家裡電腦可走 Google Drive；收工時詢問。
+
+
 ## 目前檔案
 
 - `09-AntiGravity專屬懶人包.md`：主懶人包，整理 NotebookLM、Firebase、GitHub 與開工 / 收工 / 新專案初始化流程；Obsidian 只保留為人工專案筆記，不再安裝 MCPVault。
