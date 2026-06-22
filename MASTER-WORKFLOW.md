@@ -84,15 +84,16 @@
 2. **詢問我**：今天完成了什麼、下一步、踩了什麼坑。
 3. 更新專案根目錄 `STATUS.md`（含「更新者」欄位填入當前 Agent 名稱）。
 4. 更新 Obsidian 駕駛艙筆記 `SecondBrain\<專案名稱>.md`（里程碑、踩坑知識）。
-5. **詢問專案代碼同步**：「(1) GitHub (2) 僅本地 commit (3) 跳過」。
-   - GitHub：`git diff` 確認後只 stage 相關檔案，**不用 `git add .`**，commit 後 push。
-6. **詢問第二大腦同步**：「第二大腦要同步到哪？
-   - (1) GitHub → 切到 vault 目錄，commit + push 到 `my-second-brain`
-   - (2) Google Drive → 複製到 `C:\Users\HsiuH許家修\Google Drive\SecondBrain`（資料夾不存在就自動建立）
-   - (3) 兩者都同步
-   - (4) 跳過」
-   > 提醒：公司電腦選 (1)，家裡電腦可選 (2) 或 (3)。
-7. **回報**同步結果（專案代碼 / STATUS.md / Obsidian + 同步管道）。
+5. **同步（只問一次管道，專案代碼＋第二大腦一起做）**：
+   問一題：「今天的進度要同步到哪？(1) GitHub (2) Google Drive (3) 兩者 (4) 跳過」。
+   使用者選定後，**專案代碼與第二大腦兩者都照這個選擇同步**，不要拆成兩題分開問。
+   - **選 GitHub**：
+     - 專案代碼：`git diff` 確認後只 stage 本次相關檔案（**不用 `git add .`**），commit + push 到專案 repo；若專案無遠端庫則僅本地 commit，不報錯。
+     - 第二大腦：切到 vault 目錄，commit + push 到 `my-second-brain`。
+   - **選 Google Drive**：把第二大腦 vault 與專案資料夾複製到 `C:\Users\HsiuH許家修\Google Drive\SecondBrain`（資料夾不存在就自動建立）。
+   - **選 兩者**：上面 GitHub 與 Google Drive 都做。
+   > 提醒：公司電腦封鎖 Google Drive，請選 (1)；家裡電腦可選 (2) 或 (3)。
+6. **回報**同步結果（專案代碼 / STATUS.md / Obsidian + 走了哪個管道）。
 
 ---
 
