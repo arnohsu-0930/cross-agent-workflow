@@ -8,7 +8,7 @@
 而且**換電腦也不用重設**——把這行貼給任一 Agent：
 
 ```
-這是我的跨 Agent 工作流程懶人包 https://github.com/arnohsu-0930/antigravity-lazy-pack
+這是我的跨 Agent 工作流程懶人包 https://github.com/arnohsu-0930/cross-agent-workflow
 請依 INSTALL-GLOBAL.md 把工作流程裝進你的全域設定，之後我開任何專案你都要自動遵守。
 ```
 
