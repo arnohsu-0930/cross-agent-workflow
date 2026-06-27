@@ -8,21 +8,26 @@
 
 ---
 
-## ⚡ 最快路徑：一鍵安裝腳本（Claude Code / 任何能跑 PowerShell 的 Agent）
+## ⚡ 最快路徑：一鍵安裝腳本（四 agent 一起裝）
 
-新電腦只要在 PowerShell 跑這一行，會自動裝好 gh CLI + Obsidian、登入 GitHub、clone 第二大腦、安裝全部 skills、判斷家用/公司電腦：
+新電腦只要在 PowerShell 跑這一行，會一次裝好 **Claude Code / Codex / OpenCode / AntiGravity** 四個 agent：
 
 ```powershell
-irm https://raw.githubusercontent.com/arnohsu-0930/cross-agent-workflow/main/install-claude-code.ps1 | iex
+irm https://raw.githubusercontent.com/arnohsu-0930/cross-agent-workflow/main/install-all-agents.ps1 | iex
 ```
 
 腳本會做：
 1. 問一次「這是家用電腦嗎？(Y/N)」→ 寫進 `~/.claude/machine-config.json` 記住，之後不再問。
 2. 家用 → 同步 GitHub + Google Drive（偵測 Google Drive 路徑）；公司 → 只同步 GitHub。
-3. 安裝 gh CLI、Obsidian。
-4. `gh auth login`（瀏覽器點一下 Authorize）。
-5. clone `my-second-brain` → `~/Documents/SecondBrain`。
-6. 把 `MASTER-WORKFLOW.md` 裝成 `~/.claude/CLAUDE.md`，所有 `skills/*/SKILL.md` 裝進 `~/.claude/skills/`。
+3. 安裝 gh CLI、Obsidian；`gh auth login`（瀏覽器點一下 Authorize）。
+4. clone `my-second-brain` → `~/Documents/SecondBrain`。
+5. 把 `MASTER-WORKFLOW.md` 裝進**四個 agent 各自的全域設定檔**：
+   - Claude Code → `~/.claude/CLAUDE.md` + `~/.claude/skills/`
+   - Codex → `~/.codex/AGENTS.md`
+   - OpenCode → `~/.config/opencode/AGENTS.md`
+   - AntiGravity → `~/.gemini/antigravity/global_skills/`
+
+> ⚠️ 每台電腦都要各跑一次（設定檔是本機的，不會跨電腦自動出現）。裝過的電腦不用再裝。
 
 裝完後追加（可選）：NotebookLM `uv tool install notebooklm-mcp-cli && nlm login`、MCPVault `npm install -g @bitbonsai/mcpvault`。
 
