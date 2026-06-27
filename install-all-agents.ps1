@@ -126,6 +126,9 @@ if ($picks -contains "3") {
     New-Item -ItemType Directory -Force $opencodeDir | Out-Null
     ($header + (Get-Content $master -Raw)) | Set-Content "$opencodeDir\AGENTS.md" -Encoding utf8
     Write-Host "  ✅ OpenCode：~/.config/opencode/AGENTS.md" -ForegroundColor Green
+    Write-Host "  ⚠️  OpenCode 程式本體需自行安裝（本腳本只裝設定檔）：" -ForegroundColor Yellow
+    Write-Host "       npm install -g opencode-ai" -ForegroundColor Yellow
+    Write-Host "     若尚未安裝 Node.js，請先至 https://nodejs.org 下載安裝。" -ForegroundColor Yellow
 }
 
 # 6d. AntiGravity → ~/.gemini/antigravity/global_skills/
@@ -141,6 +144,9 @@ if ($picks -contains "4") {
         Copy-Item $_.FullName "$dest\SKILL.md" -Force
     }
     Write-Host "  ✅ AntiGravity：~/.gemini/antigravity/global_skills/" -ForegroundColor Green
+    Write-Host "  ⚠️  AntiGravity 程式本體需自行安裝（本腳本只裝技能設定檔）：" -ForegroundColor Yellow
+    Write-Host "       請至官方網站下載並安裝 AntiGravity 2.0 桌面版（aa2.0）。" -ForegroundColor Yellow
+    Write-Host "       安裝後，aa2.0 啟動時會自動讀取 ~/.gemini/antigravity/global_skills/ 裡的技能。" -ForegroundColor Yellow
 }
 
 Remove-Item $tmpDir -Recurse -Force
@@ -155,4 +161,9 @@ $names = @{ "1"="Claude Code"; "2"="Codex"; "3"="OpenCode"; "4"="AntiGravity" }
 $installed = ($picks | ForEach-Object { $names[$_] }) -join " / "
 Write-Host "本次安裝的 Agent：$installed"
 Write-Host "`n以上 agent 現在都會自動遵守開工/收工/初始化流程，並用 STATUS.md 接力。"
+Write-Host "`n── 注意事項 ──" -ForegroundColor Cyan
+Write-Host "本腳本只安裝「工作流程設定檔」，以下程式本體需自行安裝（裝過就不用重裝）：" -ForegroundColor Yellow
+if ($picks -contains "3") { Write-Host "  • OpenCode 程式本體：npm install -g opencode-ai（需先裝 Node.js）" -ForegroundColor Yellow }
+if ($picks -contains "4") { Write-Host "  • AntiGravity 2.0（aa2.0）桌面版：請至官方網站下載安裝" -ForegroundColor Yellow }
+Write-Host "`ngh CLI 已安裝於本次 PowerShell 工作階段。若新開終端機找不到 gh 指令，請重開 PowerShell 即可（winget 已寫入系統 PATH，重開後自動生效）。" -ForegroundColor Cyan
 Write-Host "可選追加：NotebookLM (uv tool install notebooklm-mcp-cli && nlm login)、MCPVault (npm install -g @bitbonsai/mcpvault)"
