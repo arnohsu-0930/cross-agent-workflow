@@ -150,3 +150,40 @@
 
 - **跨 Agent**：本流程已裝進每個 Agent 的全域設定（見 `INSTALL-GLOBAL.md`），所以 Claude Code / Codex / OpenCode / AntiGravity 行為一致。
 - **跨電腦**：換新電腦時，把本 repo 丟給任一 Agent 並說「請依 INSTALL-GLOBAL.md 安裝」，它會把本流程重新裝進該電腦的全域設定；第二大腦內容則透過 `my-second-brain` GitHub repo（或 Google Drive）取回。
+
+---
+
+## 7. 指揮其他 Agent（Claude Code 當規劃者/指揮者，省 Claude Code 額度）
+
+**核心原則**：Claude Code（Opus 4.8）負責**規劃、拆解、驗收**；繁重執行**派給較省的 agent**。執行者太笨或任務太關鍵時，Claude Code 才親自做。
+
+### 兩種派工模式
+- **A. 直接 CLI 遙控**（Claude Code 自己呼叫子程序、收回 stdout）：
+  - OpenCode：`opencode run --model <provider/model> "任務"`
+  - Codex：`codex exec "任務"`（加 `--json` 出 JSONL）
+- **B. 接力轉接**（Claude Code 產出**現成可貼的 prompt + 交辦清單**，使用者複製貼到該 agent 執行，結果再回報給 Claude Code 驗收）：
+  - **AntiGravity 2.0**：在 **Windows 背景遙控不可行**（agy 有 non-TTY 不輸出的毛病，winpty 也因無主控台失敗，實測 2026-06-27）。故 aa 一律走 B 模式：Claude Code 給 prompt，使用者貼到 aa 跑。**好處：不浪費付費的 aa 額度在通不了的遙控上。**
+
+### 派工時選哪個執行者（依任務性質，Claude Code 主動推薦）
+| 任務性質 | 推薦執行者 / 模型 | 模式 |
+|---|---|---|
+| 上網查證、找地址/法人/事實、推理重、多模態 | **AntiGravity 2.0（Gemini 3 Pro）**——付費、有網路、最強 | B 接力貼上 |
+| 大量寫 code / 改 code / 低風險例行 | **OpenCode + Qwen3 Coder**（OpenRouter 免費，最強免費 coding） | A 直接 CLI |
+| 要 reasoning 的 code | **OpenCode + DeepSeek V4 Flash**（OpenRouter 免費，原生推理） | A 直接 CLI |
+| agentic 寫 code（256K context） | **OpenCode + North Mini Code**（OpenCode Zen 免費） | A 直接 CLI |
+| CI / pipeline / 結構化 code 任務 | **Codex**（`codex exec`，可 pipe/JSON） | A 直接 CLI |
+| 高難度、跨檔案、要把關驗收 | **Claude Code 親自做** | — |
+> 免費模型限制約 20 次/分、200 次/天；確切模型 slug 用 `opencode models` 查。
+
+### 交辦清單格式（Claude Code 產給任何執行者時都要包含）
+執行者**沒有本對話的上下文**，prompt 必須自帶齊全：
+1. **目標**（一句話）
+2. **背景與檔案路徑**（絕對路徑、相關檔、現況）
+3. **具體步驟**
+4. **完成標準 / 驗收點**
+5. **限制**（不要動什麼、不要 `git add .`、不要碰金鑰）
+
+### 注意
+- **A 模式**需要該執行者 CLI 已裝在本機（`opencode` / `codex`）。
+- **B 模式**只需 aa 開著；Claude Code 把 prompt 用程式碼區塊輸出方便整段複製。
+- 派工後 Claude Code 要**驗收**執行者的產出（讀檔/跑測試），不合格就退回重派或親自修。
