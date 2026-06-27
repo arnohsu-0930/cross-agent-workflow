@@ -8,9 +8,9 @@
 
 ---
 
-## ⚡ 最快路徑：一鍵安裝腳本（四 agent 一起裝）
+## ⚡ 最快路徑：一鍵安裝腳本（會先問要裝哪幾個 agent）
 
-新電腦只要在 PowerShell 跑這一行，會一次裝好 **Claude Code / Codex / OpenCode / AntiGravity** 四個 agent：
+新電腦只要在 PowerShell 跑這一行：
 
 ```powershell
 irm https://raw.githubusercontent.com/arnohsu-0930/cross-agent-workflow/main/install-all-agents.ps1 | iex
@@ -21,13 +21,15 @@ irm https://raw.githubusercontent.com/arnohsu-0930/cross-agent-workflow/main/ins
 2. 家用 → 同步 GitHub + Google Drive（偵測 Google Drive 路徑）；公司 → 只同步 GitHub。
 3. 安裝 gh CLI、Obsidian；`gh auth login`（瀏覽器點一下 Authorize）。
 4. clone `my-second-brain` → `~/Documents/SecondBrain`。
-5. 把 `MASTER-WORKFLOW.md` 裝進**四個 agent 各自的全域設定檔**：
+5. **問你「要裝哪幾個 agent？」**（1=Claude Code 2=Codex 3=OpenCode 4=AntiGravity，可多選，Enter=全部），只裝你選的：
    - Claude Code → `~/.claude/CLAUDE.md` + `~/.claude/skills/`
    - Codex → `~/.codex/AGENTS.md`
    - OpenCode → `~/.config/opencode/AGENTS.md`
    - AntiGravity → `~/.gemini/antigravity/global_skills/`
 
 > ⚠️ 每台電腦都要各跑一次（設定檔是本機的，不會跨電腦自動出現）。裝過的電腦不用再裝。
+
+> 📌 **若你是 AI Agent 透過讀本檔安裝**（非跑腳本）：動手前**務必先問使用者「要裝進哪幾個 agent 的全域設定？」**，依選擇安裝，不要預設全裝。
 
 裝完後追加（可選）：NotebookLM `uv tool install notebooklm-mcp-cli && nlm login`、MCPVault `npm install -g @bitbonsai/mcpvault`。
 

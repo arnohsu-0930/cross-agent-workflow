@@ -89,43 +89,59 @@ gh repo clone "$GITHUB_USER/cross-agent-workflow" $tmpDir 2>&1 | Out-Null
 $master = "$tmpDir\MASTER-WORKFLOW.md"
 $header = "> 本檔由 cross-agent-workflow 懶人包自動安裝。真相來源：https://github.com/$GITHUB_USER/cross-agent-workflow`n`n"
 
-# ── 6. 裝進四個 Agent 的全域設定 ──
-Write-Host "`n[6/7] 安裝到四個 Agent..." -ForegroundColor Yellow
+# ── 6. 裝進選定的 Agent 的全域設定（先問要裝哪幾個）──
+Write-Host "`n[6/7] 要安裝到哪些 Agent？" -ForegroundColor Yellow
+Write-Host "  1 = Claude Code   2 = Codex   3 = OpenCode   4 = AntiGravity"
+$sel = Read-Host "  輸入代號(可多選，逗號分隔，例 1,2,4)；直接 Enter = 全部"
+if ([string]::IsNullOrWhiteSpace($sel)) {
+    $picks = @("1","2","3","4")
+} else {
+    $picks = $sel -split '[,\s]+' | Where-Object { $_ -match '^[1-4]$' }
+}
+if (-not $picks) { Write-Host "  沒有有效選擇，預設全部裝。" -ForegroundColor Yellow; $picks = @("1","2","3","4") }
+Write-Host "  將安裝：$($picks -join ', ')" -ForegroundColor Green
 
 # 6a. Claude Code → ~/.claude/CLAUDE.md + skills/
-Copy-Item $master "$CLAUDE_DIR\CLAUDE.md" -Force
-New-Item -ItemType Directory -Force $SKILLS_DIR | Out-Null
-Get-ChildItem "$tmpDir\skills" -Recurse -Filter "SKILL.md" | ForEach-Object {
-    $name = $_.Directory.Name -replace '^\d+-', ''
-    Copy-Item $_.FullName "$SKILLS_DIR\$name.md" -Force
+if ($picks -contains "1") {
+    Copy-Item $master "$CLAUDE_DIR\CLAUDE.md" -Force
+    New-Item -ItemType Directory -Force $SKILLS_DIR | Out-Null
+    Get-ChildItem "$tmpDir\skills" -Recurse -Filter "SKILL.md" | ForEach-Object {
+        $name = $_.Directory.Name -replace '^\d+-', ''
+        Copy-Item $_.FullName "$SKILLS_DIR\$name.md" -Force
+    }
+    Write-Host "  ✅ Claude Code：CLAUDE.md + skills/" -ForegroundColor Green
 }
-Write-Host "  ✅ Claude Code：CLAUDE.md + skills/" -ForegroundColor Green
 
 # 6b. Codex → ~/.codex/AGENTS.md
-$codexDir = "$env:USERPROFILE\.codex"
-New-Item -ItemType Directory -Force $codexDir | Out-Null
-($header + (Get-Content $master -Raw)) | Set-Content "$codexDir\AGENTS.md" -Encoding utf8
-Write-Host "  ✅ Codex：~/.codex/AGENTS.md" -ForegroundColor Green
+if ($picks -contains "2") {
+    $codexDir = "$env:USERPROFILE\.codex"
+    New-Item -ItemType Directory -Force $codexDir | Out-Null
+    ($header + (Get-Content $master -Raw)) | Set-Content "$codexDir\AGENTS.md" -Encoding utf8
+    Write-Host "  ✅ Codex：~/.codex/AGENTS.md" -ForegroundColor Green
+}
 
 # 6c. OpenCode → ~/.config/opencode/AGENTS.md
-$opencodeDir = "$env:USERPROFILE\.config\opencode"
-New-Item -ItemType Directory -Force $opencodeDir | Out-Null
-($header + (Get-Content $master -Raw)) | Set-Content "$opencodeDir\AGENTS.md" -Encoding utf8
-Write-Host "  ✅ OpenCode：~/.config/opencode/AGENTS.md" -ForegroundColor Green
-
-# 6d. AntiGravity → ~/.gemini/antigravity/global_skills/antigravity-workflow/SKILL.md
-$agDir = "$env:USERPROFILE\.gemini\antigravity\global_skills\antigravity-workflow"
-New-Item -ItemType Directory -Force $agDir | Out-Null
-$wf = "$tmpDir\skills\05-workflow\SKILL.md"
-if (Test-Path $wf) { Copy-Item $wf "$agDir\SKILL.md" -Force }
-# 其餘 skills 也放進 AntiGravity global_skills
-Get-ChildItem "$tmpDir\skills" -Recurse -Filter "SKILL.md" | ForEach-Object {
-    $name = $_.Directory.Name
-    $dest = "$env:USERPROFILE\.gemini\antigravity\global_skills\$name"
-    New-Item -ItemType Directory -Force $dest | Out-Null
-    Copy-Item $_.FullName "$dest\SKILL.md" -Force
+if ($picks -contains "3") {
+    $opencodeDir = "$env:USERPROFILE\.config\opencode"
+    New-Item -ItemType Directory -Force $opencodeDir | Out-Null
+    ($header + (Get-Content $master -Raw)) | Set-Content "$opencodeDir\AGENTS.md" -Encoding utf8
+    Write-Host "  ✅ OpenCode：~/.config/opencode/AGENTS.md" -ForegroundColor Green
 }
-Write-Host "  ✅ AntiGravity：~/.gemini/antigravity/global_skills/" -ForegroundColor Green
+
+# 6d. AntiGravity → ~/.gemini/antigravity/global_skills/
+if ($picks -contains "4") {
+    $agDir = "$env:USERPROFILE\.gemini\antigravity\global_skills\antigravity-workflow"
+    New-Item -ItemType Directory -Force $agDir | Out-Null
+    $wf = "$tmpDir\skills\05-workflow\SKILL.md"
+    if (Test-Path $wf) { Copy-Item $wf "$agDir\SKILL.md" -Force }
+    Get-ChildItem "$tmpDir\skills" -Recurse -Filter "SKILL.md" | ForEach-Object {
+        $name = $_.Directory.Name
+        $dest = "$env:USERPROFILE\.gemini\antigravity\global_skills\$name"
+        New-Item -ItemType Directory -Force $dest | Out-Null
+        Copy-Item $_.FullName "$dest\SKILL.md" -Force
+    }
+    Write-Host "  ✅ AntiGravity：~/.gemini/antigravity/global_skills/" -ForegroundColor Green
+}
 
 Remove-Item $tmpDir -Recurse -Force
 
@@ -135,6 +151,8 @@ Write-Host "`n=== 安裝完成 ===" -ForegroundColor Cyan
 $mt = if ($machineConfig.machineType) { $machineConfig.machineType } else { "?" }
 Write-Host "電腦類型：$mt（home=GitHub+GoogleDrive / company=只GitHub）"
 Write-Host "第二大腦：$VAULT_PATH"
-Write-Host "已裝 Agent：Claude Code / Codex / OpenCode / AntiGravity"
-Write-Host "`n四個 agent 現在都會自動遵守開工/收工/初始化流程，並用 STATUS.md 接力。"
+$names = @{ "1"="Claude Code"; "2"="Codex"; "3"="OpenCode"; "4"="AntiGravity" }
+$installed = ($picks | ForEach-Object { $names[$_] }) -join " / "
+Write-Host "本次安裝的 Agent：$installed"
+Write-Host "`n以上 agent 現在都會自動遵守開工/收工/初始化流程，並用 STATUS.md 接力。"
 Write-Host "可選追加：NotebookLM (uv tool install notebooklm-mcp-cli && nlm login)、MCPVault (npm install -g @bitbonsai/mcpvault)"
