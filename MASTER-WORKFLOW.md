@@ -114,21 +114,22 @@
 
 ## 4. 收工流程（使用者說「收工」「下班」「先這樣」等）
 
+> **收工原則：工作內容「自動推導、不要問使用者」；唯一要問的只有「同步推到哪裡」。**
+> Agent 從本次對話自行整理「完成事項 / 下一步 / 踩坑」，不要反問使用者「你今天做了什麼」。
+
 1. **安全檢查**：掃描程式碼與筆記，確保沒有 API key、token、密碼、Firebase 憑證、個資外洩。
-2. **詢問我**：今天完成了什麼、下一步、踩了什麼坑。
+2. **自動推導今日紀錄（不要問使用者）**：從本次對話整理出「完成事項、下一步、踩坑」。只有在對話中完全無法判斷「下一步」時，才簡短問一句下一步；完成事項與踩坑一律自行歸納。
 3. 更新專案根目錄 `STATUS.md`（含「更新者」欄位填入當前 Agent 名稱）。
 4. 更新 Obsidian 駕駛艙筆記 `SecondBrain\<專案名稱>.md`（里程碑、踩坑知識）。
-5. **同步（依 `machine-config.json` 自動決定管道，不用每次問；專案代碼＋第二大腦一起做）**：
-   讀 `~/.claude/machine-config.json` 的 `machineType` 決定：
-   - **`home`（家用電腦）→ GitHub + Google Drive 都同步。**
-     - 若 `googleDriveInstalled: false` → 提醒「Google Drive 尚未安裝，本次先只推 GitHub；裝好登入後設定改 true 即自動雙同步」，本次走 GitHub。
-   - **`company`（公司電腦）→ 只走 GitHub**（Google Drive 被封鎖）。
-   - 若設定檔不存在 → 先依第 0.1 節問一次並寫入，再依結果同步。
-   - **GitHub 動作**：
+5. **詢問同步管道（這是收工唯一要問使用者的事）**：
+   「要推到哪裡？(G) 只 GitHub /(D) 只 Google Drive /(B) 兩者都推」
+   - 用 `~/.claude/machine-config.json` 的 `machineType` 決定**預設選項**並標示出來：`home`→預設 (B) 兩者；`company`→預設 (G) 只 GitHub（Google Drive 被封鎖，不建議選 D/B）。使用者直接 Enter 即採預設。
+   - 若設定檔不存在 → 先依第 0.1 節問一次身分並寫入，再依結果給預設。
+   - **GitHub 動作**（選 G 或 B 時執行）：
      - 專案代碼：`git diff` 確認後只 stage 本次相關檔案（**不用 `git add .`**）commit + push 到專案 repo；若無遠端庫則僅本地 commit，不報錯。
      - 第二大腦：切到 vault 目錄 commit + push 到 `my-second-brain`。
-   - **Google Drive 動作**：把第二大腦 vault 與專案資料夾複製到 `googleDrivePath\SecondBrain`（不存在就自動建立）。
-6. **回報**同步結果（專案代碼 / STATUS.md / Obsidian + 走了哪個管道）。
+   - **Google Drive 動作**（選 D 或 B 時執行）：把第二大腦 vault 與專案資料夾複製到 `googleDrivePath\SecondBrain`（不存在就自動建立）。若 `googleDriveInstalled: false` → 提醒「Google Drive 尚未安裝，本次無法推 D，先走 GitHub；裝好登入後把設定改 true」。
+6. **回報**同步結果（專案代碼 / STATUS.md / Obsidian + 實際走了哪個管道）。
 
 ---
 
