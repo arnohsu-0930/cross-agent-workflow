@@ -87,7 +87,13 @@ $tmpDir = "$env:TEMP\caw-install"
 if (Test-Path $tmpDir) { Remove-Item $tmpDir -Recurse -Force }
 gh repo clone "$GITHUB_USER/cross-agent-workflow" $tmpDir 2>&1 | Out-Null
 $master = "$tmpDir\MASTER-WORKFLOW.md"
-$header = "> 本檔由 cross-agent-workflow 懶人包自動安裝。真相來源：https://github.com/$GITHUB_USER/cross-agent-workflow`n`n"
+$header = "> 本檔由 cross-agent-workflow 懶人包自動安裝。真相來源：https://github.com/$GITHUB_USER/cross-agent-workflow`r`n`r`n"
+# 以明確 UTF8 讀取 master，避免 PowerShell 5.1 在中文 Windows 用 CP950 讀 UTF-8 造成亂碼
+$masterText = [System.IO.File]::ReadAllText($master, [System.Text.Encoding]::UTF8)
+# UTF8(含 BOM) 寫檔輔助函式，確保中文不亂碼
+function Write-Utf8([string]$path, [string]$text) {
+    [System.IO.File]::WriteAllText($path, $text, (New-Object System.Text.UTF8Encoding($true)))
+}
 
 # ── 6. 裝進選定的 Agent 的全域設定（先問要裝哪幾個）──
 Write-Host "`n[6/7] 要安裝到哪些 Agent？" -ForegroundColor Yellow
@@ -116,7 +122,7 @@ if ($picks -contains "1") {
 if ($picks -contains "2") {
     $codexDir = "$env:USERPROFILE\.codex"
     New-Item -ItemType Directory -Force $codexDir | Out-Null
-    ($header + (Get-Content $master -Raw)) | Set-Content "$codexDir\AGENTS.md" -Encoding utf8
+    Write-Utf8 "$codexDir\AGENTS.md" ($header + $masterText)
     Write-Host "  ✅ Codex：~/.codex/AGENTS.md" -ForegroundColor Green
 }
 
@@ -124,7 +130,7 @@ if ($picks -contains "2") {
 if ($picks -contains "3") {
     $opencodeDir = "$env:USERPROFILE\.config\opencode"
     New-Item -ItemType Directory -Force $opencodeDir | Out-Null
-    ($header + (Get-Content $master -Raw)) | Set-Content "$opencodeDir\AGENTS.md" -Encoding utf8
+    Write-Utf8 "$opencodeDir\AGENTS.md" ($header + $masterText)
     Write-Host "  ✅ OpenCode：~/.config/opencode/AGENTS.md" -ForegroundColor Green
     Write-Host "  ⚠️  OpenCode 程式本體需自行安裝（本腳本只裝設定檔）：" -ForegroundColor Yellow
     Write-Host "       npm install -g opencode-ai" -ForegroundColor Yellow
