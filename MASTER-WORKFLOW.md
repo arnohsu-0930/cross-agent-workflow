@@ -13,8 +13,41 @@
 - 我**同時使用多個 AI Agent**：Claude Code、Codex、OpenCode、AntiGravity。
 - 我在**多台電腦**間切換工作：
   - **公司電腦**：封鎖 Google Drive，只能用 **GitHub** 同步。
-  - **家裡電腦**：可以用 **Google Drive**，也可以用 GitHub。
-- 因此所有跨裝置同步**必須詢問我**要用哪個管道，不要自己假設。
+  - **家裡電腦**：GitHub + **Google Drive** 兩者都同步。
+
+### 0.1 機器身分（每台電腦記一次，之後自動）
+
+每台電腦在 `~/.claude/machine-config.json` 記住自己是家用還是公司電腦，**收工同步管道由它自動決定，不用每次問**：
+
+```json
+{
+  "machineType": "home",          // "home"=家用 / "company"=公司
+  "syncMode": "both",             // home→"both"(GitHub+GDrive) / company→"github"
+  "googleDriveInstalled": false,  // 家用電腦才需要；偵測到 Google Drive 後設 true
+  "googleDrivePath": "",          // 例 "G:\\My Drive" 或 "C:\\Users\\<你>\\Google Drive"
+  "vaultPath": "C:\\Users\\<你>\\Documents\\SecondBrain"
+}
+```
+
+**判斷規則：**
+- 設定檔**已存在** → 直接照它走，不再問。
+- 設定檔**不存在**（新電腦第一次）→ 問一次：「這是家用電腦嗎？(Y/N)」
+  - 答 **是（家用）** → `machineType: "home"`，並偵測是否裝了 Google Drive for Desktop：
+    - 有裝 → `googleDriveInstalled: true` + 填 `googleDrivePath`，收工走 GitHub + Google Drive。
+    - 沒裝 → `googleDriveInstalled: false`，提醒安裝，**收工暫時只走 GitHub**，裝好後改 true 即自動雙同步。
+  - 答 **否（公司）** → `machineType: "company"`，收工只走 GitHub（Google Drive 被封鎖）。
+- 寫入 machine-config.json 後**記住**，下次同一台電腦不再問。
+
+### 0.2 打字縮寫（不分大小寫；Agent 回覆時一律用全名）
+
+| 縮寫 | 全名 |
+|---|---|
+| `aa` | AntiGravity 2.0 agent |
+| `ob` | Obsidian |
+| `op` | OpenCode agent |
+| `cc` | Claude Code agent |
+
+> Arno 打縮寫，Agent 理解即可；但 Agent 回覆提到某 agent / 模型時，要用全名（例：回「Claude Code」不可縮成 cc）。
 
 ---
 
@@ -56,9 +89,10 @@
 
 | 項目 | 路徑 |
 |------|------|
-| Obsidian Vault（第二大腦） | `C:\Users\HsiuH許家修\Documents\SecondBrain` |
+| Obsidian Vault（第二大腦） | `~/Documents/SecondBrain`（以實際家目錄為準，見 machine-config 的 `vaultPath`） |
 | 第二大腦 GitHub repo | `https://github.com/arnohsu-0930/my-second-brain`（private） |
-| 第二大腦 Google Drive 備份 | `C:\Users\HsiuH許家修\Google Drive\SecondBrain`（家裡電腦用，若不存在則自動建立） |
+| 第二大腦 Google Drive 備份 | machine-config 的 `googleDrivePath\SecondBrain`（家用電腦才有，若不存在則自動建立） |
+| 機器身分設定檔 | `~/.claude/machine-config.json`（記住家用/公司 + 同步管道） |
 | 各專案進度檔 | `<專案根目錄>\STATUS.md` |
 | Obsidian 駕駛艙筆記 | `SecondBrain\<專案名稱>.md` |
 
@@ -84,15 +118,16 @@
 2. **詢問我**：今天完成了什麼、下一步、踩了什麼坑。
 3. 更新專案根目錄 `STATUS.md`（含「更新者」欄位填入當前 Agent 名稱）。
 4. 更新 Obsidian 駕駛艙筆記 `SecondBrain\<專案名稱>.md`（里程碑、踩坑知識）。
-5. **同步（只問一次管道，專案代碼＋第二大腦一起做）**：
-   問一題：「今天的進度要同步到哪？(1) GitHub (2) Google Drive (3) 兩者 (4) 跳過」。
-   使用者選定後，**專案代碼與第二大腦兩者都照這個選擇同步**，不要拆成兩題分開問。
-   - **選 GitHub**：
-     - 專案代碼：`git diff` 確認後只 stage 本次相關檔案（**不用 `git add .`**），commit + push 到專案 repo；若專案無遠端庫則僅本地 commit，不報錯。
-     - 第二大腦：切到 vault 目錄，commit + push 到 `my-second-brain`。
-   - **選 Google Drive**：把第二大腦 vault 與專案資料夾複製到 `C:\Users\HsiuH許家修\Google Drive\SecondBrain`（資料夾不存在就自動建立）。
-   - **選 兩者**：上面 GitHub 與 Google Drive 都做。
-   > 提醒：公司電腦封鎖 Google Drive，請選 (1)；家裡電腦可選 (2) 或 (3)。
+5. **同步（依 `machine-config.json` 自動決定管道，不用每次問；專案代碼＋第二大腦一起做）**：
+   讀 `~/.claude/machine-config.json` 的 `machineType` 決定：
+   - **`home`（家用電腦）→ GitHub + Google Drive 都同步。**
+     - 若 `googleDriveInstalled: false` → 提醒「Google Drive 尚未安裝，本次先只推 GitHub；裝好登入後設定改 true 即自動雙同步」，本次走 GitHub。
+   - **`company`（公司電腦）→ 只走 GitHub**（Google Drive 被封鎖）。
+   - 若設定檔不存在 → 先依第 0.1 節問一次並寫入，再依結果同步。
+   - **GitHub 動作**：
+     - 專案代碼：`git diff` 確認後只 stage 本次相關檔案（**不用 `git add .`**）commit + push 到專案 repo；若無遠端庫則僅本地 commit，不報錯。
+     - 第二大腦：切到 vault 目錄 commit + push 到 `my-second-brain`。
+   - **Google Drive 動作**：把第二大腦 vault 與專案資料夾複製到 `googleDrivePath\SecondBrain`（不存在就自動建立）。
 6. **回報**同步結果（專案代碼 / STATUS.md / Obsidian + 走了哪個管道）。
 
 ---
