@@ -51,15 +51,31 @@
 
 ---
 
-## 1. 跨 Agent 共用狀態檔：STATUS.md
+## 1. 跨 Agent 共用狀態檔：STATUS.md（每個專案的唯一真相來源）
 
-每個專案根目錄放一個 `STATUS.md`，這是**所有 Agent 共用的接力棒**。
-不管哪個 Agent 打開專案，先讀它就知道別的 Agent 做到哪。
+每個專案根目錄放一個 `STATUS.md`，這是**所有 Agent、所有電腦共用的唯一真相來源（Single Source of Truth）**。
+不管哪個 Agent、在哪台電腦打開專案，**第一件事就是讀它**，立刻知道：這專案在哪、推到哪、別的 Agent 做到哪。
+
+> **黃金原則：實質內容只寫在 STATUS.md 一份。**
+> 各 Agent 的專案說明檔（`CLAUDE.md` / `AGENTS.md` / `ANTIGRAVITY.md`）一律**薄化**成「指標」，
+> 只寫一句「本專案規範見全域工作流程；當前狀態與路徑請讀 `STATUS.md`」，
+> **不重複寫專案內容**——避免多 agent / 多檔不同步、自相矛盾。
 
 `STATUS.md` 格式：
 
 ```markdown
 # <專案名稱> STATUS
+
+> 本檔 = 本專案唯一真相來源。任何 Agent / 任何電腦打開本專案先讀這裡。
+
+## 同步對應表（換電腦時靠這張表對照，不依賴本機絕對路徑）
+| 項目 | 位置 |
+|------|------|
+| 專案資料夾 | 以各機 `~`（家目錄）為準；本專案相對位置：<例 ~/projects/xxx> |
+| Git 遠端 | <repo url，例 https://github.com/arnohsu-0930/xxx> |
+| Obsidian 駕駛艙筆記 | `SecondBrain\<專案名稱>.md` |
+| Google Drive 備份 | `<googleDrivePath>\SecondBrain\<專案名稱>`（家用電腦才有） |
+| 使用的 Agent | Claude Code / Codex / OpenCode / AntiGravity（實際用到的） |
 
 ## 完成事項
 - ...
@@ -78,8 +94,11 @@
 - 更新者：<Claude Code / Codex / OpenCode / AntiGravity>
 ```
 
+> **跨電腦零落差關鍵**：同步對應表**不要寫死本機絕對路徑**（`C:\Users\User\…` 跟 `C:\Users\HsiuH許家修\…` 每台不同）。
+> 一律用「以家目錄 `~` 為準的相對描述」+ git 遠端 URL，換電腦 clone 下來照表即可重建，不會落差。
+
 **兩層紀錄分工：**
-- `STATUS.md`（專案根目錄）→ 給 Agent 快速讀寫的「當前進度接力棒」，跟著專案 repo 走。
+- `STATUS.md`（專案根目錄）→ **唯一真相**：當前狀態、路徑、進度，跟著專案 repo 走，git 一推即跨電腦同步。
 - **Obsidian 第二大腦**（駕駛艙筆記）→ 跨專案總覽、長期里程碑、踩坑知識庫。
 - 收工時**兩者都更新**：STATUS.md 寫當前狀態，Obsidian 寫里程碑。
 
@@ -137,20 +156,27 @@
 
 1. **詢問**：專案名稱、用途、工作資料夾路徑、是否要 GitHub repo（私有/公開/不要）、是否要 Google Drive 備份。
 2. **自動建立**（已存在則補齊缺口、不覆蓋）：
-   - `STATUS.md`（跨 Agent 狀態檔，套用第 1 節格式）
-   - 該 Agent 的專案說明檔（Claude→`CLAUDE.md`、Codex/OpenCode→`AGENTS.md`、AntiGravity→`ANTIGRAVITY.md`）
+   - **`STATUS.md`＝唯一真相來源**（套用第 1 節格式，**並填好「同步對應表」**：專案相對路徑、git 遠端 URL、Obsidian 筆記、Google Drive 備份、使用的 Agent）。專案的實質資訊只寫這一份。
+   - **各 Agent 的專案說明檔一律「薄化」**，只放指標、**不重複寫專案內容**：
+     - 內容固定為一句：「本專案規範見全域工作流程（cross-agent-workflow）；當前狀態、路徑與進度一律讀同目錄的 `STATUS.md`。」
+     - 一次把**會用到的 agent 入口檔都建好**（不只當前 agent）：Claude→`CLAUDE.md`、Codex/OpenCode→`AGENTS.md`、AntiGravity→`ANTIGRAVITY.md`。這樣換哪個 agent 開專案，都讀得到自己的入口、再被導向 STATUS.md。
    - `README.md`、`.gitignore`（排除敏感檔案與編譯產物）
    - 初始化本地 git
-   - 若需要：`gh repo create`
+   - 若需要：`gh repo create`（私有為主）並 push，把遠端 URL 回填進 STATUS.md 同步對應表
    - 在 Obsidian Vault 下建立「<專案名稱>.md」駕駛艙筆記
-3. 在新建的專案說明檔頂部加一行，指向本工作流程，讓未來其他 Agent 也知道規範。
+3. **驗收「換電腦零落差」**：確認 STATUS.md 同步對應表沒有寫死本機絕對路徑（用 `~` 相對描述 + git URL），且各 agent 薄入口檔都指向 STATUS.md。
+   → 之後任何電腦只要 `git clone` 專案 + 已安裝全域工作流程，讀 STATUS.md 就能無落差接手。
 
 ---
 
 ## 6. 跨 Agent / 跨電腦保證
 
 - **跨 Agent**：本流程已裝進每個 Agent 的全域設定（見 `INSTALL-GLOBAL.md`），所以 Claude Code / Codex / OpenCode / AntiGravity 行為一致。
-- **跨電腦**：換新電腦時，把本 repo 丟給任一 Agent 並說「請依 INSTALL-GLOBAL.md 安裝」，它會把本流程重新裝進該電腦的全域設定；第二大腦內容則透過 `my-second-brain` GitHub repo（或 Google Drive）取回。
+- **跨電腦（兩層都要顧，才能真正零落差）**：
+  1. **全域工作流程層**：換新電腦時，把本 repo 丟給任一 Agent 說「請依 INSTALL-GLOBAL.md 安裝」（或跑一鍵腳本），把本流程重新裝進該電腦的全域設定。
+  2. **專案層**：`git clone` 專案 repo → 讀根目錄 `STATUS.md`（唯一真相 + 同步對應表）→ 立刻知道專案在哪、推到哪、做到哪，**無落差接手**。
+  3. **第二大腦層**：透過 `my-second-brain` GitHub repo（或家用電腦的 Google Drive）取回 Obsidian 筆記。
+- **零落差檢查清單**：①全域流程已裝 ②專案已 clone 且 STATUS.md 同步對應表不含本機絕對路徑 ③第二大腦已拉最新 → 三項齊全即可在任何電腦、任何 Agent 無縫接力。
 
 ---
 
